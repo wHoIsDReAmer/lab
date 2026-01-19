@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k3s-root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/wHoIsDReAmer/lab.git
+    targetRevision: main
+    path: clusters/k3s/argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
