@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: infra-ingress-nginx
+  name: infra-traefik
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-4"
@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: https://github.com/wHoIsDReAmer/lab.git
     targetRevision: main
-    path: clusters/k3s/infra/ingress-nginx
+    path: clusters/k3s/infra/traefik
   destination:
     server: https://kubernetes.default.svc
-    namespace: ingress-nginx
+    namespace: kube-system
   syncPolicy:
     automated:
       prune: true

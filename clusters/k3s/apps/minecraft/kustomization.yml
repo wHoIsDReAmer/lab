@@ -6,3 +6,4 @@ resources:
   - statefulset.yml
   - service.yml
   - ingress.yml
+  - ingressroute-tcp.yml

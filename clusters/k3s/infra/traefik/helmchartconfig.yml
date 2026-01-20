@@ -1,0 +1,15 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    additionalArguments:
+      - "--entrypoints.minecraft.address=:25565/tcp"
+    ports:
+      minecraft:
+        port: 25565
+        expose: true
+        exposedPort: 25565
+        protocol: TCP
