@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seafile-db
+  template:
+    metadata:
+      labels:
+        app: seafile-db
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:10.11
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: seafile-secret
+              key: DB_ROOT_PASSWD
+        - name: MYSQL_LOG_CONSOLE
+          value: "true"
+        - name: MARIADB_AUTO_UPGRADE
+          value: "1"
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-data
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: seafile-mysql-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memcached
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seafile-memcached
+  template:
+    metadata:
+      labels:
+        app: seafile-memcached
+    spec:
+      containers:
+      - name: memcached
+        image: memcached:1.6.18
+        args:
+          - "-m"
+          - "256"
+        ports:
+        - containerPort: 11211
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seafile
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seafile
+  template:
+    metadata:
+      labels:
+        app: seafile
+    spec:
+      containers:
+      - name: seafile
+        image: seafileltd/seafile-mc:11.0-latest
+        ports:
+        - containerPort: 80
+        - containerPort: 8082
+        env:
+        - name: DB_HOST
+          value: db
+        - name: DB_ROOT_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: seafile-secret
+              key: DB_ROOT_PASSWD
+        - name: TIME_ZONE
+          value: Etc/UTC
+        - name: SEAFILE_ADMIN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: seafile-secret
+              key: ADMIN_EMAIL
+        - name: SEAFILE_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: seafile-secret
+              key: ADMIN_PASSWORD
+        - name: SEAFILE_SERVER_LETSENCRYPT
+          value: "false"
+        - name: SEAFILE_SERVER_HOSTNAME
+          value: seafile.devcw.xyz
+        volumeMounts:
+        - mountPath: /shared
+          name: seafile-data
+      volumes:
+      - name: seafile-data
+        persistentVolumeClaim:
+          claimName: seafile-data-pvc
