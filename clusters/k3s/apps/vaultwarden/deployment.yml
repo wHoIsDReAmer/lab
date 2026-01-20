@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaultwarden
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vaultwarden
+  template:
+    metadata:
+      labels:
+        app: vaultwarden
+    spec:
+      containers:
+      - name: vaultwarden
+        image: ghcr.io/dani-garcia/vaultwarden:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: SIGNUPS_ALLOWED
+          value: "false"
+        - name: INVITATIONS_ALLOWED
+          value: "false"
+        - name: PUSH_ALLOWED
+          value: "false"
+        - name: DOMAIN
+          value: "https://vault.devcw.xyz"
+        - name: ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: vaultwarden-secret
+              key: ADMIN_TOKEN
+        volumeMounts:
+        - mountPath: /data
+          name: vaultwarden-storage
+
+      volumes:
+        - name: vaultwarden-storage
+          persistentVolumeClaim:
+            claimName: vaultwarden-pvc
