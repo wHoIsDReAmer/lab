@@ -1,14 +1,40 @@
-.PHONY: help seal-cloudflare seal-vaultwarden seal-seafile
+.PHONY: help install-kubeseal fetch-seal-cert seal-cloudflare seal-vaultwarden seal-seafile
 
 KUBECTL ?= kubectl
 KUBESEAL ?= kubeseal
-SEAL_CERT ?= /path/to/sealed-secrets-public.pem
+KUBESEAL_OS ?= linux
+KUBESEAL_ARCH ?= amd64
+KUBESEAL_BIN ?= ./bin/kubeseal
+KUBESEAL_VERSION ?=
+KUBESEAL_TAG ?=
+SEAL_CERT ?= ./secrets/sealed-secrets-public.pem
 
 help:
 	@echo "Targets:"
+	@echo "  install-kubeseal  Download kubeseal CLI into ./bin"
+	@echo "  fetch-seal-cert   Fetch Sealed Secrets public cert into SEAL_CERT"
 	@echo "  seal-cloudflare   Generate SealedSecret for Cloudflare API token"
 	@echo "  seal-vaultwarden  Generate SealedSecret for Vaultwarden admin token"
 	@echo "  seal-seafile      Generate SealedSecret for Seafile DB/admin creds"
+
+install-kubeseal:
+	@mkdir -p ./bin
+	@TAG="$(KUBESEAL_TAG)"; \
+	if [ -z "$$TAG" ] && [ -n "$(KUBESEAL_VERSION)" ]; then TAG="v$(KUBESEAL_VERSION)"; fi; \
+	if [ -z "$$TAG" ]; then \
+		TAG=$$(curl -fsSL https://api.github.com/repos/bitnami-labs/sealed-secrets/releases/latest | awk -F '"' '/"tag_name":/ {print $$4}'); \
+	fi; \
+	if [ -z "$$TAG" ]; then echo "Failed to determine kubeseal release tag" >&2; exit 1; fi; \
+	VERSION=$${TAG#v}; \
+	URL="https://github.com/bitnami-labs/sealed-secrets/releases/download/$${TAG}/kubeseal-$${VERSION}-$(KUBESEAL_OS)-$(KUBESEAL_ARCH).tar.gz"; \
+	TMP="/tmp/kubeseal-$${VERSION}.tar.gz"; \
+	curl -fsSL "$$URL" -o "$$TMP"; \
+	tar -xz -C ./bin -f "$$TMP" kubeseal; \
+	chmod +x "$(KUBESEAL_BIN)"; \
+	echo "kubeseal installed at $(KUBESEAL_BIN)"
+
+fetch-seal-cert:
+	$(KUBESEAL) --fetch-cert > "$(SEAL_CERT)"
 
 seal-cloudflare:
 	@test -n "$(CLOUDFLARE_API_TOKEN)" || (echo "CLOUDFLARE_API_TOKEN is required" >&2; exit 1)
