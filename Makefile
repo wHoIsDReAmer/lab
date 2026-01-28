@@ -34,7 +34,10 @@ install-kubeseal:
 	echo "kubeseal installed at $(KUBESEAL_BIN)"
 
 fetch-seal-cert:
-	$(KUBESEAL) --fetch-cert > "$(SEAL_CERT)"
+	$(KUBESEAL) --fetch-cert \
+		--controller-namespace sealed-secrets \
+		--controller-name sealed-secrets-controller \
+		> "$(SEAL_CERT)"
 
 seal-cloudflare:
 	@test -n "$(CLOUDFLARE_API_TOKEN)" || (echo "CLOUDFLARE_API_TOKEN is required" >&2; exit 1)
