@@ -6,6 +6,9 @@ metadata:
 spec:
   valuesContent: |-
     additionalArguments:
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
       - "--entrypoints.minecraft.address=:25565/tcp"
     ports:
       minecraft:
