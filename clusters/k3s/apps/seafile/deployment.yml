@@ -103,6 +103,8 @@ spec:
               key: ADMIN_PASSWORD
         - name: SEAFILE_SERVER_LETSENCRYPT
           value: "false"
+        - name: FORCE_HTTPS_IN_CONF
+          value: "true"
         - name: SEAFILE_SERVER_HOSTNAME
           value: seafile.devcw.xyz
         volumeMounts:
