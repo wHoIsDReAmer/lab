@@ -72,6 +72,7 @@ spec:
       labels:
         app: seafile
     spec:
+      enableServiceLinks: false
       containers:
       - name: seafile
         image: seafileltd/seafile-mc:11.0-latest
@@ -81,6 +82,8 @@ spec:
         env:
         - name: DB_HOST
           value: db
+        - name: DB_PORT
+          value: "3306"
         - name: DB_ROOT_PASSWD
           valueFrom:
             secretKeyRef:
