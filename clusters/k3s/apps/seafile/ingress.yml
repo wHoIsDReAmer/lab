@@ -25,3 +25,4 @@ spec:
   tls:
   - hosts:
     - seafile.devcw.xyz
+  ingressClassName: traefik
