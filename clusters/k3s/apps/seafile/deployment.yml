@@ -73,6 +73,53 @@ spec:
         app: seafile
     spec:
       enableServiceLinks: false
+      initContainers:
+      - name: seafile-proxy-csrf-patch
+        image: seafileltd/seafile-mc:11.0-latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          seahub_settings = Path('/shared/seafile/conf/seahub_settings.py')
+          if seahub_settings.exists():
+              text = seahub_settings.read_text(errors='ignore')
+              text = text.replace(
+                  'SERVICE_URL = "http://seafile.devcw.xyz"',
+                  'SERVICE_URL = "https://seafile.devcw.xyz"',
+              )
+              text = text.replace(
+                  'FILE_SERVER_ROOT = "http://seafile.devcw.xyz/seafhttp"',
+                  'FILE_SERVER_ROOT = "https://seafile.devcw.xyz/seafhttp"',
+              )
+
+              required_lines = [
+                  "CSRF_TRUSTED_ORIGINS = ['https://seafile.devcw.xyz']",
+                  "SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')",
+                  'USE_X_FORWARDED_HOST = True',
+              ]
+              for line in required_lines:
+                  if line not in text:
+                      text = text.rstrip() + '\n' + line + '\n'
+
+              seahub_settings.write_text(text)
+
+          nginx_conf = Path('/shared/nginx/conf/seafile.nginx.conf')
+          if nginx_conf.exists():
+              text = nginx_conf.read_text(errors='ignore')
+              text = re.sub(
+                  r'(proxy_set_header\s+X-Forwarded-Proto)\s+\$scheme;',
+                  r'\\1 $http_x_forwarded_proto;',
+                  text,
+              )
+              nginx_conf.write_text(text)
+          PY
+        volumeMounts:
+        - mountPath: /shared
+          name: seafile-data
       containers:
       - name: seafile
         image: seafileltd/seafile-mc:11.0-latest
