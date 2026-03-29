@@ -8,5 +8,5 @@ spec:
   routes:
   - match: HostSNI(`*`)
     services:
-    - name: minecraft
-      port: 25565
+    - name: velocity
+      port: 25577
