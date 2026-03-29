@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: velocity
+spec:
+  selector:
+    matchLabels:
+      app: velocity
+  serviceName: "velocity"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: velocity
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: velocity
+        image: itzg/bungeecord:latest
+        env:
+        - name: TYPE
+          value: "VELOCITY"
+        - name: VELOCITY_VERSION
+          value: "3.4.0-SNAPSHOT"
+        - name: VELOCITY_BUILD_ID
+          value: "latest"
+        - name: MEMORY
+          value: "512M"
+        ports:
+        - containerPort: 25577
+          name: proxy
+        volumeMounts:
+        - mountPath: /server
+          name: data
+        - mountPath: /config
+          name: velocity-config
+          readOnly: true
+        readinessProbe:
+          tcpSocket:
+            port: 25577
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 25577
+          initialDelaySeconds: 30
+          periodSeconds: 15
+      volumes:
+      - name: velocity-config
+        configMap:
+          name: velocity-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: local-path
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi

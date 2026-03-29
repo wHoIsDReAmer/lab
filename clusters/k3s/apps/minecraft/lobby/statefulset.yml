@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: lobby
+spec:
+  selector:
+    matchLabels:
+      app: lobby
+  serviceName: "lobby"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lobby
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: lobby
+        image: itzg/minecraft-server:latest
+        tty: true
+        stdin: true
+        ports:
+        - containerPort: 25565
+          name: minecraft
+        env:
+        - name: EULA
+          value: "TRUE"
+        - name: TYPE
+          value: "PAPER"
+        - name: VERSION
+          value: "1.21.4"
+        - name: MEMORY
+          value: "2G"
+        - name: ONLINE_MODE
+          value: "FALSE"
+        - name: SERVER_PORT
+          value: "25565"
+        - name: MOTD
+          value: "Lobby Server"
+        - name: DIFFICULTY
+          value: "peaceful"
+        - name: SPAWN_PROTECTION
+          value: "0"
+        - name: MAX_PLAYERS
+          value: "100"
+        - name: VIEW_DISTANCE
+          value: "10"
+        - name: ENABLE_COMMAND_BLOCK
+          value: "TRUE"
+        - name: FORCE_GAMEMODE
+          value: "TRUE"
+        - name: GAMEMODE
+          value: "adventure"
+        - name: PVP
+          value: "FALSE"
+        - name: LEVEL_TYPE
+          value: "flat"
+        - name: GENERATOR_SETTINGS
+          value: '{"layers":[{"block":"stone","height":1},{"block":"grass_block","height":1}],"biome":"plains"}'
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        readinessProbe:
+          exec:
+            command:
+            - mc-health
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - mc-health
+          initialDelaySeconds: 60
+          periodSeconds: 15
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: local-path
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
