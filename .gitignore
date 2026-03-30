@@ -1,3 +1,6 @@
 references/
 secrets/
+
+# Agents
 .omx/
+.omc/
