@@ -13,6 +13,7 @@ spec:
       labels:
         app: lobby
     spec:
+      enableServiceLinks: false
       terminationGracePeriodSeconds: 60
       containers:
       - name: lobby
@@ -56,7 +57,10 @@ spec:
         - name: PROXY
           value: "VELOCITY"
         - name: VELOCITY_SECRET
-          value: "CHANGE_ME_ON_FIRST_BOOT"
+          valueFrom:
+            secretKeyRef:
+              name: velocity-forwarding-secret
+              key: forwarding.secret
         - name: LEVEL_TYPE
           value: "flat"
         - name: GENERATOR_SETTINGS
