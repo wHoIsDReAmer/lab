@@ -53,6 +53,10 @@ spec:
           value: "adventure"
         - name: PVP
           value: "FALSE"
+        - name: PROXY
+          value: "VELOCITY"
+        - name: VELOCITY_SECRET
+          value: "CHANGE_ME_ON_FIRST_BOOT"
         - name: LEVEL_TYPE
           value: "flat"
         - name: GENERATOR_SETTINGS
