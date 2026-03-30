@@ -40,5 +40,3 @@ data:
     port = 25577
     map = "Velocity"
 
-  forwarding.secret: |
-    CHANGE_ME_ON_FIRST_BOOT
