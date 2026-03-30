@@ -8,5 +8,5 @@ spec:
   routes:
   - match: HostSNI(`*`)
     services:
-    - name: velocity
+    - name: velocity-proxy
       port: 25577

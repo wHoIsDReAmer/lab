@@ -15,6 +15,30 @@ spec:
     spec:
       enableServiceLinks: false
       terminationGracePeriodSeconds: 60
+      initContainers:
+      - name: configure-velocity
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          CONF="/data/config/paper-global.yml"
+          if [ -f "$CONF" ]; then
+            sed -i 's/enabled: false/enabled: true/' "$CONF"
+            sed -i "s|secret: .*|secret: ${CFG_VELOCITY_SECRET}|" "$CONF"
+            echo "[init] Velocity forwarding configured"
+          else
+            echo "[init] paper-global.yml not found yet, will be configured on next restart"
+          fi
+        env:
+        - name: CFG_VELOCITY_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: velocity-forwarding-secret
+              key: forwarding.secret
+        volumeMounts:
+        - mountPath: /data
+          name: data
       containers:
       - name: lobby
         image: itzg/minecraft-server:latest
@@ -54,13 +78,15 @@ spec:
           value: "adventure"
         - name: PVP
           value: "FALSE"
-        - name: PROXY
-          value: "VELOCITY"
-        - name: VELOCITY_SECRET
+        - name: CFG_VELOCITY_SECRET
           valueFrom:
             secretKeyRef:
               name: velocity-forwarding-secret
               key: forwarding.secret
+        - name: REPLACE_ENV_VARIABLES
+          value: "TRUE"
+        - name: ENV_VARIABLE_PREFIX
+          value: "CFG_"
         - name: LEVEL_TYPE
           value: "flat"
         - name: GENERATOR_SETTINGS
