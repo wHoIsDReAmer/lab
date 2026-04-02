@@ -22,10 +22,13 @@ spec:
         - sh
         - -c
         - |
+          KTULU_VERSION="v0.1.1"
+          KTULU_URL="https://github.com/wHoIsDReAmer/Ktulu/releases/download/${KTULU_VERSION}/Ktulu.jar"
           mkdir -p /data/plugins /data/plugins/Ktulu
-          if [ ! -f /data/plugins/Ktulu.jar ]; then
+          if [ ! -f /data/plugins/Ktulu/.version ] || [ "$(cat /data/plugins/Ktulu/.version)" != "${KTULU_VERSION}" ]; then
             wget -O /data/plugins/Ktulu.jar \
-              https://github.com/wHoIsDReAmer/Ktulu/releases/download/v0.1.0/Ktulu.jar
+              "${KTULU_URL}"
+            printf '%s\n' "${KTULU_VERSION}" > /data/plugins/Ktulu/.version
           fi
           if [ ! -f /data/plugins/Ktulu/config.yml ]; then
             printf '%s\n' \
