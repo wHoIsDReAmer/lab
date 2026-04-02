@@ -16,6 +16,36 @@ spec:
       enableServiceLinks: false
       terminationGracePeriodSeconds: 60
       initContainers:
+      - name: install-ktulu
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /data/plugins /data/plugins/Ktulu
+          if [ ! -f /data/plugins/Ktulu.jar ]; then
+            wget -O /data/plugins/Ktulu.jar \
+              https://github.com/wHoIsDReAmer/Ktulu/releases/download/v0.1.0/Ktulu.jar
+          fi
+          if [ ! -f /data/plugins/Ktulu/config.yml ]; then
+            printf '%s\n' \
+              '# Ktulu Configuration' \
+              '' \
+              '# API key for web dashboard authentication.' \
+              '# Leave empty to disable authentication (not recommended for production).' \
+              'api-key: ""' \
+              '' \
+              '# Web server port' \
+              'port: 8332' \
+              '' \
+              '# Enable if behind a reverse proxy (nginx, Cloudflare, etc.)' \
+              '# When enabled, uses X-Forwarded-For / X-Real-IP headers for client IP.' \
+              'reverse-proxy: true' \
+              > /data/plugins/Ktulu/config.yml
+          fi
+        volumeMounts:
+        - mountPath: /data
+          name: data
       - name: configure-velocity
         image: busybox:1.36
         command:
@@ -47,6 +77,8 @@ spec:
         ports:
         - containerPort: 25565
           name: minecraft
+        - containerPort: 8332
+          name: ktulu
         env:
         - name: EULA
           value: "TRUE"
