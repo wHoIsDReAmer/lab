@@ -100,6 +100,8 @@ spec:
                   "CSRF_TRUSTED_ORIGINS = ['https://seafile.devcw.xyz']",
                   "SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')",
                   'USE_X_FORWARDED_HOST = True',
+                  'DATA_UPLOAD_MAX_MEMORY_SIZE = 5368709120',
+                  'FILE_UPLOAD_MAX_MEMORY_SIZE = 5368709120',
               ]
               for line in required_lines:
                   if line not in text:
@@ -113,6 +115,13 @@ spec:
               text = re.sub(
                   r'(proxy_set_header\s+X-Forwarded-Proto)\s+\$scheme;',
                   r'\\1 $http_x_forwarded_proto;',
+                  text,
+              )
+              # Raise nginx body size limit so seahub UI uploads above ~10MB
+              # do not fail with HTTP 413. /seafhttp routes already use 0 (unlimited).
+              text = re.sub(
+                  r'client_max_body_size\s+10m;',
+                  'client_max_body_size 5g;',
                   text,
               )
               nginx_conf.write_text(text)
