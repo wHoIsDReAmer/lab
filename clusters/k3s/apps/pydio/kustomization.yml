@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pydio
+resources:
+  - namespace.yml
+  - pv.yml
+  - pvc.yml
+  - servers-transport.yml
+  - sealedsecret.yml
+  - deployment.yml
+  - service.yml
+  - ingress.yml
+
+configMapGenerator:
+  - name: pydio-config
+    literals:
+      - CELLS_SITE_EXTERNAL=https://pydio.devcw.xyz
+      - MYSQL_DATABASE=cells
+      - MYSQL_USER=pydio

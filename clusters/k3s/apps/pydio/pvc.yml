@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pydio-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: pydio-storage
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pydio-mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: pydio-mysql-storage
+  resources:
+    requests:
+      storage: 10Gi

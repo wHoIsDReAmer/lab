@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pydio-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/devcw/k3s/pydio/cellsdir
+  storageClassName: pydio-storage
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pydio-mysql-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/devcw/k3s/pydio/mysqldir
+  storageClassName: pydio-mysql-storage

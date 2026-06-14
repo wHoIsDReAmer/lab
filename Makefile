@@ -1,4 +1,4 @@
-.PHONY: help install-kubeseal fetch-seal-cert seal-cloudflare seal-vaultwarden seal-seafile
+.PHONY: help install-kubeseal fetch-seal-cert seal-cloudflare seal-vaultwarden seal-seafile seal-pydio
 
 KUBECTL ?= kubectl
 KUBESEAL ?= kubeseal
@@ -16,6 +16,7 @@ help:
 	@echo "  seal-cloudflare   Generate SealedSecret for Cloudflare API token"
 	@echo "  seal-vaultwarden  Generate SealedSecret for Vaultwarden admin token"
 	@echo "  seal-seafile      Generate SealedSecret for Seafile DB/admin creds"
+	@echo "  seal-pydio        Generate SealedSecret for Pydio Cells DB creds"
 
 install-kubeseal:
 	@mkdir -p ./bin
@@ -66,3 +67,13 @@ seal-seafile:
 		--dry-run=client -o yaml | \
 	$(KUBESEAL) --cert "$(SEAL_CERT)" --format yaml > \
 		clusters/k3s/apps/seafile/sealedsecret.yml
+
+seal-pydio:
+	@test -n "$(CELLS_DB_PASSWORD)" || (echo "CELLS_DB_PASSWORD is required" >&2; exit 1)
+	@test -n "$(MYSQL_ROOT_PASSWORD)" || (echo "MYSQL_ROOT_PASSWORD is required" >&2; exit 1)
+	$(KUBECTL) -n pydio create secret generic pydio-secret \
+		--from-literal=CELLS_DB_PASSWORD="$(CELLS_DB_PASSWORD)" \
+		--from-literal=MYSQL_ROOT_PASSWORD="$(MYSQL_ROOT_PASSWORD)" \
+		--dry-run=client -o yaml | \
+	$(KUBESEAL) --cert "$(SEAL_CERT)" --format yaml > \
+		clusters/k3s/apps/pydio/sealedsecret.yml

@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pydio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pydio
+  template:
+    metadata:
+      labels:
+        app: pydio
+    spec:
+      containers:
+      - name: pydio
+        image: pydio/cells:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: CELLS_SITE_EXTERNAL
+          valueFrom:
+            configMapKeyRef:
+              name: pydio-config
+              key: CELLS_SITE_EXTERNAL
+        - name: CELLS_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: pydio-config
+              key: MYSQL_DATABASE
+        - name: CELLS_DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: pydio-config
+              key: MYSQL_USER
+        - name: CELLS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pydio-secret
+              key: CELLS_DB_PASSWORD
+        - name: CELLS_DB_HOST
+          value: "mysql"
+        volumeMounts:
+        - mountPath: /var/cells
+          name: pydio-storage
+      volumes:
+      - name: pydio-storage
+        persistentVolumeClaim:
+          claimName: pydio-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mariadb:latest
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: pydio-config
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: pydio-config
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pydio-secret
+              key: CELLS_DB_PASSWORD
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pydio-secret
+              key: MYSQL_ROOT_PASSWORD
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: pydio-mysql-storage
+      volumes:
+      - name: pydio-mysql-storage
+        persistentVolumeClaim:
+          claimName: pydio-mysql-pvc
