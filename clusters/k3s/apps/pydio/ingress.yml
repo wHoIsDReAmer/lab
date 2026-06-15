@@ -1,24 +1,16 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
 metadata:
   name: pydio
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/service.serversscheme: https
-    traefik.ingress.kubernetes.io/service.serverstransport: pydio-pydio-notls@kubernetescrd
 spec:
-  ingressClassName: traefik
-  rules:
-  - host: pydio.devcw.xyz
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: pydio-service
-            port:
-              number: 8080
-  tls:
-  - hosts:
-    - pydio.devcw.xyz
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`pydio.devcw.xyz`)
+      kind: Rule
+      services:
+        - name: pydio-service
+          port: 8080
+          scheme: https
+          serversTransport: pydio-notls
+  tls: {}
