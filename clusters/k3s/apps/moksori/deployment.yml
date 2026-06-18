@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moksori
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: moksori
+  template:
+    metadata:
+      labels:
+        app: moksori
+    spec:
+      containers:
+      - name: moksori
+        image: ghcr.io/whoisdreamer/moksori:latest
+        imagePullPolicy: Always
+        env:
+        - name: DISCORD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: moksori-secret
+              key: DISCORD_TOKEN
+        # Register slash commands instantly to one guild during dev (global if empty).
+        - name: DEV_GUILD_ID
+          value: ""
+        # sqlite db lives on the mounted PVC at /app/data (Dockerfile WORKDIR=/app).
+        - name: DATABASE_URL
+          value: "sqlite://data/moksori.db?mode=rwc"
+        # TTS language for Google Translate's TTS endpoint (no API key/billing needed).
+        - name: TTS_LANGUAGE
+          value: "ko"
+        - name: FFMPEG_BIN
+          value: "ffmpeg"
+        - name: RUST_LOG
+          value: "moksori=info,serenity=warn,songbird=warn"
+        volumeMounts:
+        - mountPath: /app/data
+          name: data
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: "1"
+            memory: 768Mi
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: moksori-data-pvc

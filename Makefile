@@ -1,4 +1,4 @@
-.PHONY: help install-kubeseal fetch-seal-cert seal-cloudflare seal-vaultwarden seal-seafile seal-pydio
+.PHONY: help install-kubeseal fetch-seal-cert seal-cloudflare seal-vaultwarden seal-seafile seal-pydio seal-moksori
 
 KUBECTL ?= kubectl
 KUBESEAL ?= kubeseal
@@ -17,6 +17,7 @@ help:
 	@echo "  seal-vaultwarden  Generate SealedSecret for Vaultwarden admin token"
 	@echo "  seal-seafile      Generate SealedSecret for Seafile DB/admin creds"
 	@echo "  seal-pydio        Generate SealedSecret for Pydio Cells DB creds"
+	@echo "  seal-moksori      Generate SealedSecret for moksori Discord token"
 
 install-kubeseal:
 	@mkdir -p ./bin
@@ -77,3 +78,11 @@ seal-pydio:
 		--dry-run=client -o yaml | \
 	$(KUBESEAL) --cert "$(SEAL_CERT)" --format yaml > \
 		clusters/k3s/apps/pydio/sealedsecret.yml
+
+seal-moksori:
+	@test -n "$(DISCORD_TOKEN)" || (echo "DISCORD_TOKEN is required" >&2; exit 1)
+	$(KUBECTL) -n moksori create secret generic moksori-secret \
+		--from-literal=DISCORD_TOKEN="$(DISCORD_TOKEN)" \
+		--dry-run=client -o yaml | \
+	$(KUBESEAL) --cert "$(SEAL_CERT)" --format yaml > \
+		clusters/k3s/apps/moksori/sealedsecret.yml
