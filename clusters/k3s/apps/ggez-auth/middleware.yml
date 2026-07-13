@@ -1,0 +1,9 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: ggez-auth-rate-limit
+spec:
+  rateLimit:
+    average: 2
+    period: 1s
+    burst: 10
