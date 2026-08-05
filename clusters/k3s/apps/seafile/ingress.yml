@@ -8,13 +8,6 @@ spec:
   - host: seafile.devcw.xyz
     http:
       paths:
-      - path: /seafhttp
-        pathType: Prefix
-        backend:
-          service:
-            name: seafile
-            port:
-              number: 8082
       - path: /
         pathType: Prefix
         backend:
