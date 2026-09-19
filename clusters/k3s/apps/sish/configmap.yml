@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sish-pubkeys
+data:
+  tunnel.pub: |
+    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgYKZgRSO2qdWXxGK02YeSerXnmH4p/B5MY26EkCBqA tunnel@devcw

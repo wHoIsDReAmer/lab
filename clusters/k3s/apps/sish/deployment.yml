@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sish
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sish
+  template:
+    metadata:
+      labels:
+        app: sish
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: sish
+        image: antoniomika/sish:v2.23.0
+        args:
+        - --ssh-address=:2222
+        - --http-address=:8090
+        - --https=false
+        - --domain=tunnel.devcw.xyz
+        - --authentication=true
+        - --authentication-keys-directory=/pubkeys
+        - --private-keys-directory=/keys
+        - --bind-random-ports=false
+        volumeMounts:
+        - { name: keys, mountPath: /keys, readOnly: true }
+        - { name: pubkeys, mountPath: /pubkeys, readOnly: true }
+        resources:
+          requests: { cpu: 20m, memory: 32Mi }
+          limits:   { cpu: "1", memory: 256Mi }
+      volumes:
+      - name: keys
+        secret:
+          secretName: sish-hostkey
+          defaultMode: 0400
+      - name: pubkeys
+        configMap:
+          name: sish-pubkeys
