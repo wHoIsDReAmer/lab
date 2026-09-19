@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rathole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rathole
+  template:
+    metadata:
+      labels:
+        app: rathole
+    spec:
+      containers:
+      - name: rathole
+        image: rapiz1/rathole:v0.5.0
+        # entrypoint is ./rathole; config path arg makes it run as server
+        # (server vs client is auto-detected from the [server] section).
+        args:
+        - /config/server.toml
+        ports:
+        - { containerPort: 2333, name: control }
+        - { containerPort: 5201, name: tcp1 }
+        - { containerPort: 5202, name: tcp2 }
+        - { containerPort: 5203, name: tcp3 }
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          readOnly: true
+        resources:
+          requests: { cpu: 10m, memory: 32Mi }
+          limits: { cpu: 200m, memory: 128Mi }
+      volumes:
+      - name: config
+        secret:
+          secretName: rathole-config
+          items:
+          - key: server.toml
+            path: server.toml

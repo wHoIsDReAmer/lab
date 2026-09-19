@@ -1,4 +1,4 @@
-.PHONY: help install-kubeseal fetch-seal-cert seal-cloudflare seal-vaultwarden seal-seafile seal-pydio seal-moksori
+.PHONY: help install-kubeseal fetch-seal-cert seal-cloudflare seal-vaultwarden seal-seafile seal-pydio seal-moksori seal-rathole
 
 KUBECTL ?= kubectl
 KUBESEAL ?= kubeseal
@@ -18,6 +18,7 @@ help:
 	@echo "  seal-seafile      Generate SealedSecret for Seafile DB/admin creds"
 	@echo "  seal-pydio        Generate SealedSecret for Pydio Cells DB creds"
 	@echo "  seal-moksori      Generate SealedSecret for moksori Discord token"
+	@echo "  seal-rathole      Generate SealedSecret for rathole server.toml (RATHOLE_SERVER_TOML=path)"
 
 install-kubeseal:
 	@mkdir -p ./bin
@@ -86,3 +87,11 @@ seal-moksori:
 		--dry-run=client -o yaml | \
 	$(KUBESEAL) --cert "$(SEAL_CERT)" --format yaml > \
 		clusters/k3s/apps/moksori/sealedsecret.yml
+
+seal-rathole:
+	@test -n "$(RATHOLE_SERVER_TOML)" || (echo "RATHOLE_SERVER_TOML (path to server.toml) is required" >&2; exit 1)
+	$(KUBECTL) -n rathole create secret generic rathole-config \
+		--from-file=server.toml="$(RATHOLE_SERVER_TOML)" \
+		--dry-run=client -o yaml | \
+	$(KUBESEAL) --cert "$(SEAL_CERT)" --format yaml > \
+		clusters/k3s/apps/rathole/sealedsecret.yml

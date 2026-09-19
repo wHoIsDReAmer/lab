@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rathole
+spec:
+  type: LoadBalancer
+  selector:
+    app: rathole
+  ports:
+  - { name: control, port: 2333, targetPort: 2333, protocol: TCP }
+  - { name: tcp1, port: 5201, targetPort: 5201, protocol: TCP }
+  - { name: tcp2, port: 5202, targetPort: 5202, protocol: TCP }
+  - { name: tcp3, port: 5203, targetPort: 5203, protocol: TCP }
